@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator SNBP</title>
+    <link rel="icon" href="yadika.png">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #005a96;
+            --secondary: #0099ff;
+            --warning: #e74c3c;
+            --dark: #24323f;
+            --light: #457263;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgb(0, 0, 0);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        p.subtitle {
+            text-align: center;
+            margin-bottom: 5px;
+            color: #000000;
+        }
+
+        /* --- CSS TAGLINE BERJALAN --- */
+        .marquee-wrapper {
+            width: 100%;
+            overflow: hidden;
+            background: #006bb3;
+            padding: 10px 0;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 1px dashed #000000;
+        }
+
+        .marquee-text {
+            display: inline-block;
+            white-space: nowrap;
+            font-weight: bold;
+            color: #ffffff;
+            animation: jalan-terus 20s linear infinite;
+        }
+
+        @keyframes jalan-terus {
+            0% {
+                transform: translateX(100%);
+            }
+
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+
+        /* --- STYLE FORM --- */
+        .semester-box {
+            border: 1px solid #0099ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            background: #fff;
+        }
+
+        .semester-title {
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+            display: inline-block;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        input {
+            padding: 10px;
+            border: 1px solid #000000;
+            border-radius: 5px;
+            flex: 1;
+            transition: 0.3s;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 5px rgb(0, 63, 105);
+        }
+
+        input[type="number"] {
+            max-width: 90px;
+        }
+
+        .btn {
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            padding: 12px 20px;
+            transition: 0.3s;
+            font-weight: bold;
+        }
+
+        .btn-add {
+            background: var(--secondary);
+            color: white;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
+        .btn-calculate {
+            background: var(--primary);
+            color: white;
+            width: 100%;
+            font-size: 1.1rem;
+            margin-top: 20px;
+        }
+
+        .btn-reset {
+            background: #f01010;
+            color: #fff;
+            margin-top: 10px;
+            width: 100%;
+            font-size: 0.9rem;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        /* --- ANIMASI LOADING --- */
+        #loading {
+            display: none;
+            text-align: center;
+            margin: 25px 0;
+        }
+
+        .spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary);
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            animation: spin 1s linear infinite;
+            margin: auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        #result-area {
+            display: none;
+            margin-top: 20px;
+            animation: fadeIn 0.8s;
+        }
+
+        #result-display {
+            text-align: center;
+            padding: 25px;
+            background: #e8f4fd;
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        #result-display h2 {
+            margin: 0;
+            color: var(--primary);
+            font-size: 2.5rem;
+        }
+
+        /* Tambahan Style Grafik */
+        .chart-container {
+            padding: 15px;
+            background: #fff;
+            border: 1px solid #0099ff;
+            border-radius: 12px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Style khusus untuk layar HP (Lebar maksimal 600px) */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+                /* Kurangi padding luar agar lebih luas */
+            }
+
+            .container {
+                padding: 15px;
+                /* Perkecil padding kontainer */
+            }
+
+            h1 {
+                font-size: 1.5rem;
+                /* Perkecil ukuran judul agar tidak makan tempat */
+            }
+
+            .input-group {
+                flex-direction: column;
+                /* Ubah input nama mapel dan nilai jadi atas-bawah */
+                align-items: stretch;
+                gap: 5px;
+            }
+
+            input[type="number"] {
+                max-width: 100%;
+                /* Biar kotak nilai selebar layar HP */
+            }
+
+            .semester-box {
+                padding: 15px 10px;
+            }
+
+            .btn {
+                padding: 15px;
+                /* Tombol dibuat lebih besar agar mudah ditekan jari */
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>📊 SNBP Grade Calculator</h1>
+        <p class="subtitle">Bantu rencanakan masa depanmu dengan hitung rata-rata rapor.</p>
+
+        <div class="marquee-wrapper">
+            <div class="marquee-text">
+                ✨ Sudah Terbiasa Terjadi Tante Teman Datang Ketika Lagi Butuh Saja Coba Kalo Lagi Susah Mereka Semua
+                Menghilang . . .
+
+                ✨ @Ingin Jadi Programmer Handal Namun Enggan Ngoding ✨
+            </div>
+        </div>
+
+        <div id="semesters-container"></div>
+
+        <button class="btn btn-calculate" onclick="prosesHitung()">Cek Rata-Rata & Analisis Grafik</button>
+        <button class="btn btn-reset" onclick="resetData()">Hapus Semua Data (Reset)</button>
+
+        <div id="loading">
+            <div class="spinner"></div>
+            <p>Sedang menghitung skor akhir kamu...</p>
+        </div>
+
+        <div id="result-area">
+            <div id="result-display">
+                <p>Hasil Rata-Rata Rapor (Sem 1-5):</p>
+                <h2 id="result-text">0.00</h2>
+                <p style="margin-top:10px; font-size: 0.9rem;"><i>**Gunakan hasil ini sebagai referensi pendaftaran
+                        SNBP.</i></p>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="grafikNilai"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const semestersContainer = document.getElementById('semesters-container');
+        const defaultMapel = ["Matematika", "Bahasa Indonesia", "Bahasa Inggris"];
+        let myChart = null; // Untuk menyimpan instance grafik
+
+        function init() {
+            const dataTersimpan = JSON.parse(localStorage.getItem('dataSNBP'));
+
+            for (let i = 1; i <= 5; i++) {
+                let semDiv = document.createElement('div');
+                semDiv.className = 'semester-box';
+                semDiv.innerHTML = `
+                    <div class="semester-title">Semester ${i}</div>
+                    <div id="inputs-sem-${i}"></div>
+                    <button class="btn btn-add" onclick="tambahMapel(${i})">+ Mapel Pilihan</button>
+                `;
+                semestersContainer.appendChild(semDiv);
+
+                if (dataTersimpan && dataTersimpan[i - 1]) {
+                    dataTersimpan[i - 1].forEach(item => buatInputRow(i, item.nama, item.nilai));
+                } else {
+                    defaultMapel.forEach(nama => buatInputRow(i, nama, ""));
+                }
+            }
+        }
+
+        function buatInputRow(semId, nama = "", nilai = "") {
+            const container = document.getElementById(`inputs-sem-${semId}`);
+            const div = document.createElement('div');
+            div.className = 'input-group';
+            const isDefault = defaultMapel.includes(nama);
+
+            div.innerHTML = `
+                <input type="text" placeholder="Nama Mapel" value="${nama}" ${isDefault ? 'readonly' : ''} oninput="simpanData()">
+                <input type="number" class="nilai-sem-${semId}" placeholder="Nilai" value="${nilai}" min="0" max="100" oninput="simpanData()">
+            `;
+            container.appendChild(div);
+        }
+
+        function tambahMapel(semId) {
+            buatInputRow(semId);
+            simpanData();
+        }
+
+        function simpanData() {
+            let semuaData = [];
+            for (let i = 1; i <= 5; i++) {
+                let semData = [];
+                const rows = document.getElementById(`inputs-sem-${i}`).querySelectorAll('.input-group');
+                rows.forEach(row => {
+                    const inputs = row.querySelectorAll('input');
+                    semData.push({ nama: inputs[0].value, nilai: inputs[1].value });
+                });
+                semuaData.push(semData);
+            }
+            localStorage.setItem('dataSNBP', JSON.stringify(semuaData));
+        }
+
+        function prosesHitung() {
+            const loading = document.getElementById('loading');
+            const resultArea = document.getElementById('result-area');
+            const resultText = document.getElementById('result-text');
+
+            resultArea.style.display = 'none';
+            loading.style.display = 'block';
+
+            setTimeout(() => {
+                let totalNilaiSemua = 0;
+                let totalMapelSemua = 0;
+                let dataGrafik = []; // Simpan rata-rata per semester
+
+                for (let i = 1; i <= 5; i++) {
+                    const nilaiInputs = document.querySelectorAll(`.nilai-sem-${i}`);
+                    let totalSem = 0;
+                    let jumlahMapelSem = 0;
+
+                    nilaiInputs.forEach(input => {
+                        if (input.value !== "") {
+                            let val = parseFloat(input.value);
+                            totalSem += val;
+                            jumlahMapelSem++;
+                            totalNilaiSemua += val;
+                            totalMapelSemua++;
+                        }
+                    });
+
+                    // Hitung rata-rata per semester untuk grafik
+                    let rataSem = jumlahMapelSem > 0 ? (totalSem / jumlahMapelSem).toFixed(2) : 0;
+                    dataGrafik.push(rataSem);
+                }
+
+                const rataRataFinal = totalMapelSemua > 0 ? (totalNilaiSemua / totalMapelSemua).toFixed(2) : "0.00";
+
+                loading.style.display = 'none';
+                resultArea.style.display = 'block';
+                resultText.innerText = rataRataFinal;
+
+                // Jalankan fungsi update grafik
+                renderGrafik(dataGrafik);
+            }, 1500);
+        }
+
+        function renderGrafik(dataNilai) {
+            const ctx = document.getElementById('grafikNilai').getContext('2d');
+
+            // Hancurkan grafik lama jika user klik hitung lagi agar tidak error
+            if (myChart) { myChart.destroy(); }
+
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4', 'Sem 5'],
+                    datasets: [{
+                        label: 'Tren Rata-Rata Nilai',
+                        data: dataNilai,
+                        borderColor: '#005a96',
+                        backgroundColor: 'rgba(0, 153, 255, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.3, // Membuat garis agak melengkung
+                        fill: true,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#0099ff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            min: 0,
+                            max: 100,
+                            title: { display: true, text: 'Nilai' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function resetData() {
+            if (confirm("Hapus semua data yang sudah diisi?")) {
+                localStorage.removeItem('dataSNBP');
+                location.reload();
+            }
+        }
+
+        init();
+    </script>
+</body>
+
+</html>
